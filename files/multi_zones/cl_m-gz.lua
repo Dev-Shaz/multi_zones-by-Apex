@@ -18,18 +18,18 @@ Greenzones = { -- Add your greenzones here. Do not forget the comma!
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(5)
+        local playerped = PlayerPedId()
 
         if isInCityZone then
-        	SetEntityMaxSpeed(GetVehiclePedIsIn(GetPlayerPed(-1), false),speedInGZ)
+        	SetEntityMaxSpeed(GetVehiclePedIsIn(playerped, false),speedInGZ)
         else
-        	SetEntityMaxSpeed(GetVehiclePedIsIn(GetPlayerPed(-1), false),speedNotInGZ)
+        	SetEntityMaxSpeed(GetVehiclePedIsIn(playerped, false),speedNotInGZ)
         end
 
-        local ped = GetEntityCoords(GetPlayerPed(-1))
+        local ped = GetEntityCoords(playerped)
         for zoneTitel, zoneData in pairs(Greenzones) do
 --            DrawMarker(28, zoneData.Coords.x, zoneData.Coords.y, zoneData.Coords.z, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, --[[scalex]]zoneData.Radius, --[[scaley]]zoneData.Radius, --[[scalez]]zoneData.Radius, 0, 255, 68, 40, false, true, 2, nil, nil, false)
-            if Vdist(zoneData.Coords, ped) < zoneData.Radius then
-            	
+            if #(zoneData.Coords - ped) < zoneData.Radius then
                 DisableActions() -- runs line 74
                 if isLeaveMessagePresent then
                     DrawTextOnScreen("YOU ARE IN A GREENZONE", 0.74, 0.95, 0, 255, 0, 200, 0.8, 7)
@@ -39,7 +39,7 @@ Citizen.CreateThread(function()
                     isMeldingVerstuurd = true 
                     EnteredGreenzone()   -- runs line 33               
                 end                 
-            elseif Vdist(zoneData.Coords, ped) < (zoneData.Radius + 30) and Vdist(zoneData.Coords, ped) > zoneData.Radius then
+            elseif #(zoneData.Coords - ped) < (zoneData.Radius + 30) and #(zoneData.Coords - ped) > zoneData.Radius then
                 if isLeaveMessagePresent then
                     DrawTextOnScreen("YOU LEFT THE GREENZONE", 0.73, 0.95, 0, 255, 0, 200, 0.8, 7)
                 end
@@ -78,7 +78,7 @@ function LeftGreenzone()
 --        multiline = true,
 --        args = {"Server", "You just left the redzone"}})  
     PlaySound(-1, "CHARACTER_CHANGE_CHARACTER_01_MASTER", 0, 0, 0, 0)
-    SetEntityMaxSpeed(GetVehiclePedIsIn(GetPlayerPed(-1), false),speedNotInGZ)
+    SetEntityMaxSpeed(GetVehiclePedIsIn(PlayerPedId(), false),speedNotInGZ)
     isLeaveMessagePresent = true
     Citizen.SetTimeout(leaveMessage, function() -- Wait the timer to be done
         isLeaveMessagePresent = false
@@ -88,8 +88,9 @@ function LeftGreenzone()
 end
 
 function DisableActions()
+    local playerped = PlayerPedId()
     DisableControlAction(2, 37, true) -- Disable Weaponwheel
-    DisablePlayerFiring(GetPlayerPed(-1),true) -- Disable firing
+    DisablePlayerFiring(playerped, true) -- Disable firing
     DisableControlAction(0, 45, true) -- Disable reloading
     DisableControlAction(0, 24, true) -- Disable attacking
     DisableControlAction(0, 263, true) -- Disable melee attack 1
@@ -99,8 +100,8 @@ function DisableActions()
     
     for k, v in pairs(GetActivePlayers()) do 
         local ped = GetPlayerPed(v)
-        SetEntityNoCollisionEntity(GetPlayerPed(-1), GetVehiclePedIsIn(ped, false), true)
-        SetEntityNoCollisionEntity(GetVehiclePedIsIn(ped, false), GetVehiclePedIsIn(GetPlayerPed(-1), false), true)
+        SetEntityNoCollisionEntity(playerped, GetVehiclePedIsIn(ped, false), true)
+        SetEntityNoCollisionEntity(GetVehiclePedIsIn(ped, false), GetVehiclePedIsIn(playerped, false), true)
     end 
 end
 
